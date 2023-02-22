@@ -42,13 +42,13 @@ class MinimalSubscriber(Node):
         self.cmd_linear = Vector3()  # must be a Vector3
         self.cmd_angular = Vector3()  # must be a Vector3
         # TODO find the correct coordinates
-        self.coords_recup = False
         self.coords_zone = [[-100, -100], [100, 100]]
         self.coords_entry = [[-100, -100], [100, 100]]
         self.coords_net = [[-100, 0], [100, 0]]
         self.net_sides = [[[0, 0], [0, 0]], [[0, 0], [0, 0]]]
         self.lis_balls = []
         self.waypoints = []
+        self.err_prec = 0.
 
 
     def detect_zone(self, msg):
@@ -140,10 +140,12 @@ class MinimalSubscriber(Node):
         err_pos_imp2 = 40
         err_pos = 20 #pixel
         vit_rot = 0.5
+        kp = 0.2
         #self.get_logger().info('angle cherché: "%f"' % theta) 
         #self.get_logger().info('angle actu: "%f"' % angle_robot) 
         self.get_logger().info(str(self.position_robot)+ "pos_rob")
         self.get_logger().info(str(x_dest)+ " " + str(y_dest))
+        err = theta - angle_robot
 
         if (np.abs(theta - angle_robot) > err_angle):
             if (abs(x - x_dest)>=err_pos or abs(y - y_dest)>=err_pos):
@@ -155,20 +157,20 @@ class MinimalSubscriber(Node):
                     self.cmd_linear.x = 0.
                 if np.sign(theta) == np.sign(angle_robot):
                     if theta > angle_robot:
-                        self.cmd_angular.z = vit_rot*np.abs(theta - angle_robot)/2
+                        self.cmd_angular.z = vit_rot*np.abs(theta - angle_robot)/2 + kp*(err - err_prec)
                     else:
-                        self.cmd_angular.z = -vit_rot*np.abs(theta - angle_robot)/2
+                        self.cmd_angular.z = -vit_rot*np.abs(theta - angle_robot)/2 + kp*(err - err_prec)
                 else:
                     if np.abs(theta - angle_robot) > np.pi:
                         if theta < angle_robot:
-                            self.cmd_angular.z = vit_rot*(np.abs(theta - angle_robot)-np.pi)/2
+                            self.cmd_angular.z = vit_rot*(np.abs(theta - angle_robot)-np.pi)/2 + kp*(err - err_prec)
                         else:
-                            self.cmd_angular.z = -vit_rot*(np.abs(theta - angle_robot)-np.pi)/2
+                            self.cmd_angular.z = -vit_rot*(np.abs(theta - angle_robot)-np.pi)/2 + kp*(err - err_prec)
                     else:
                         if theta < angle_robot:
-                            self.cmd_angular.z = -vit_rot*np.abs(theta - angle_robot)/2
+                            self.cmd_angular.z = -vit_rot*np.abs(theta - angle_robot)/2 + kp*(err - err_prec)
                         else:
-                            self.cmd_angular.z = vit_rot*np.abs(theta - angle_robot)/2
+                            self.cmd_angular.z = vit_rot*np.abs(theta - angle_robot)/2 + kp*(err - err_prec)
         else:
             self.cmd_angular.z = 0.
             if (abs(x - x_dest)>=err_pos or abs(y - y_dest)>=err_pos):
@@ -190,7 +192,8 @@ class MinimalSubscriber(Node):
                 ramassage_balle = self.path_balls(lis_balls, self.passage_filet(), self.position_robot[0], self.position_robot[1], 30) + self.path_balls(lis_balls, lis_balls[0], self.passage_filet()[0], self.passage_filet()[1], 30)
             #self.get_logger().info("Ramasse"+str(ramassage_balle))
             #self.get_logger().info("waypoint"+str(self.waypoints))
-            self.waypoints = ramassage_balle  
+            self.waypoints = ramassage_balle
+        if 
 
 
     def passage_filet(self):
