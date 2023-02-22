@@ -81,7 +81,7 @@ def generate_launch_description():
 
 
     return launch.LaunchDescription([
-        launch.actions.DeclareLaunchArgument(name='model', default_value=default_model_path,
+launch.actions.DeclareLaunchArgument(name='model', default_value=default_model_path,
                                                 description='Absolute path to robot urdf file'),
 
         # launch.actions.ExecuteProcess(cmd=['gazebo', '--verbose', '-s',
@@ -97,6 +97,7 @@ def generate_launch_description():
         spawn_entity,
         robot_localization_node,
 
+
         
         RegisterEventHandler(
             event_handler=OnProcessExit(
@@ -111,6 +112,5 @@ def generate_launch_description():
             )
         )
      
-      
     ])
 
