@@ -7,8 +7,9 @@ import numpy as np
 from rclpy.node import Node
 from std_msgs.msg import Int16MultiArray, Float32
 from geometry_msgs.msg import Vector3, Twist
-
-
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge
+from std_msgs.msg import Bool
 class MinimalSubscriber(Node):
 
     def __init__(self):
@@ -33,7 +34,13 @@ class MinimalSubscriber(Node):
             self.listener_orientation_callback,
             10)
         self.subscription3  # prevent unused variable warning
+        self.subscription4 = self.create_subscription(
+            Image,
+            '/zenith_camera/image_raw',
+            self.detect_zone,
+            10)
         self.publisher_ = self.create_publisher(Twist, '/demo/cmd_vel', 10)
+        self.publisher1_ = self.create_publisher(Bool, '/bool_pelle', 10)
         timer_period = 0.1  # seconds
         self.timer = self.create_timer(timer_period, self.timer_cmd_callback)
 
@@ -52,8 +59,10 @@ class MinimalSubscriber(Node):
         self.ball_is_catch = True
 
 
+
     def detect_zone(self, msg):
-        current_frame = self.br.imgmsg_to_cv2(msg)
+        
+        current_frame = CvBridge().imgmsg_to_cv2(msg)
         current_frame = cv2.cvtColor(current_frame, cv2.COLOR_BGR2RGB)
         hsv = cv2.cvtColor(current_frame, cv2.COLOR_RGB2HSV)
         # on effectue un masque avec les valeurs ci-dessous recuperee sur internet
@@ -97,8 +106,23 @@ class MinimalSubscriber(Node):
             self.straight_line(dest_x, dest_y)
         ###
         self.publisher_.publish(msg)
-
-
+        b = Bool()
+        (x,y) = self.position_robot
+        (c1,c2)= self.waypoints[0]
+        d = np.sqrt((x-c1)**2+(y-c2)**2)
+        if d<100:
+            b.data = False
+            self.publisher1_.publish(b)
+        else : 
+            b.data = True
+            self.publisher1_.publish(b)
+            
+    def ball_is_catch(self):
+        """Cette fonction permet de savoir si le waypoint atteint correspond à une balle attrapée"""
+        points_filets = [(70,590), (70,690), (630,690), (630,590)]
+        if self.waypoints[0,0] not in points_filets:
+            self.ball_is_catch = True
+            
     def listener_callback(self, msg):
         lis_interm = []
         for i in range(0, len(msg.data), 3):
@@ -110,6 +134,7 @@ class MinimalSubscriber(Node):
         pos_x = msg.x
         pos_y = msg.y
         self.position_robot = (pos_x, pos_y)
+        self.get_logger().info(str(self.position_robot))
 
 
     def listener_orientation_callback(self, msg):
@@ -141,9 +166,12 @@ class MinimalSubscriber(Node):
         err_pos_imp2 = 40
         err_pos = 20 #pixel
         vit_rot = 0.5
+<<<<<<< HEAD
         kp = 0.2
         #self.get_logger().info('angle cherché: "%f"' % theta) 
         #self.get_logger().info('angle actu: "%f"' % angle_robot) 
+=======
+>>>>>>> e1869deef9aa0e93451ed6cf6f771945814db169
         self.get_logger().info(str(self.position_robot)+ "pos_rob")
         self.get_logger().info(str(x_dest)+ " " + str(y_dest))
         err = theta - angle_robot
@@ -174,11 +202,16 @@ class MinimalSubscriber(Node):
                             else:
                                 self.cmd_angular.z = vit_rot*np.abs(theta - angle_robot)/2 + kp*(err - self.err_prec)
             else:
+<<<<<<< HEAD
                 self.cmd_angular.z = 0.
                 if (abs(x - x_dest)>=err_pos*2 or abs(y - y_dest)>=err_pos*2):
                    self.cmd_linear.x = 0.7
                 if ( err_pos<abs(x - x_dest)<err_pos*2 or err_pos<abs(y - y_dest)<err_pos*2):
                     self.cmd_linear.x = 0.4
+=======
+
+                self.waypoints.remove(self.waypoints[0])
+>>>>>>> e1869deef9aa0e93451ed6cf6f771945814db169
                 
         else:
             self.waypoints.remove(self.waypoints[0])

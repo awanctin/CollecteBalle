@@ -44,15 +44,15 @@ class MinimalSubscriber(Node):
             lower = np.array([100, 60, 150], dtype=np.uint8)
             upper = np.array([200, 90, 255], dtype=np.uint8)
             seg0 = cv2.inRange(hsv, lower, upper)
-            pixel_blanc_x = []
-            pixel_blanc_y = []
-            for i in range(len(seg0)):
-                for j in range(len(seg0[0])):
-                    if seg0[i, j] == 255:
-                        pixel_blanc_x.append(i)
-                        pixel_blanc_y.append(j)
-            pos_x = int(np.sum(pixel_blanc_x)/len(pixel_blanc_x))
-            pos_y = int(np.sum(pixel_blanc_y)/len(pixel_blanc_y))
+            coord_x, coord_y = np.array(np.where(seg0 == 255))
+            coord_x_moy = 0
+            coord_y_moy = 0
+            for i in range(len(coord_x)):
+                coord_x_moy += coord_x[i]
+                coord_y_moy += coord_y[i]
+            
+            pos_x = coord_x_moy/len(coord_x)
+            pos_y = coord_y_moy/len(coord_x)
             self.position_robot = (pos_x, pos_y)
         except:
             self.get_logger().info('CRASH')
