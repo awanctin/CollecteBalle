@@ -53,7 +53,7 @@ class Pelle_cmd(Node):
         
             cmd.linear.x = 0.1
             self.publisher_.publish(cmd)
-            time.sleep(2.0)    
+            time.sleep(1.0)    
                 
                 
             memoire = True
@@ -65,7 +65,7 @@ class Pelle_cmd(Node):
             
             cmd.linear.x = -0.1
             self.publisher_.publish(cmd)
-            time.sleep(2.0)
+            time.sleep(1.0)
             
             memoire = False
                 
