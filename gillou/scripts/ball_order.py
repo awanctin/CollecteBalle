@@ -115,6 +115,7 @@ class MinimalSubscriber(Node):
         pos_x = msg.x
         pos_y = msg.y
         self.position_robot = (pos_x, pos_y)
+        self.get_logger().info(str(self.position_robot))
 
 
     def listener_orientation_callback(self, msg):
