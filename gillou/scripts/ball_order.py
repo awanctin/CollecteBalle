@@ -42,14 +42,14 @@ class MinimalSubscriber(Node):
         self.cmd_linear = Vector3()  # must be a Vector3
         self.cmd_angular = Vector3()  # must be a Vector3
         # TODO find the correct coordinates
-        self.coords_zone = [[-100, -100], [100, 100]]
-        self.coords_entry = [[-100, -100], [100, 100]]
+        self.coords_zone = [[100, 100], [100, 100]]
+        self.coords_entry = [[121, 121], [100, 100]]
         self.coords_net = [[-100, 0], [100, 0]]
         self.net_sides = [[[0, 0], [0, 0]], [[0, 0], [0, 0]]]
         self.lis_balls = []
         self.waypoints = []
         self.err_prec = 0.
-        self.ball_is_catch = False
+        self.ball_is_catch = True
 
 
     def detect_zone(self, msg):
@@ -148,44 +148,57 @@ class MinimalSubscriber(Node):
         self.get_logger().info(str(x_dest)+ " " + str(y_dest))
         err = theta - angle_robot
 
-        if (np.abs(theta - angle_robot) > err_angle):
-            if (abs(x - x_dest)>=err_pos or abs(y - y_dest)>=err_pos):
-                if (abs(x - x_dest)>=err_pos_imp and abs(y - y_dest)>=err_pos_imp):
-                    self.cmd_linear.x = 0.4
-                elif (abs(x - x_dest)>=err_pos_imp2 and abs(y - y_dest)>=err_pos_imp2):
-                    self.cmd_linear.x = 0.2
-                else: 
-                    self.cmd_linear.x = 0.
-                if np.sign(theta) == np.sign(angle_robot):
-                    if theta > angle_robot:
-                        self.cmd_angular.z = vit_rot*np.abs(theta - angle_robot)/2 + kp*(err - err_prec)
-                    else:
-                        self.cmd_angular.z = -vit_rot*np.abs(theta - angle_robot)/2 + kp*(err - err_prec)
-                else:
-                    if np.abs(theta - angle_robot) > np.pi:
-                        if theta < angle_robot:
-                            self.cmd_angular.z = vit_rot*(np.abs(theta - angle_robot)-np.pi)/2 + kp*(err - err_prec)
+        if (abs(x - x_dest)>=err_pos or abs(y - y_dest)>=err_pos):
+            if (np.abs(theta - angle_robot) > err_angle):
+                if (abs(x - x_dest)>=err_pos or abs(y - y_dest)>=err_pos):
+                    if (abs(x - x_dest)>=err_pos_imp and abs(y - y_dest)>=err_pos_imp):
+                        self.cmd_linear.x = 0.7
+                    elif (abs(x - x_dest)>=err_pos_imp2 and abs(y - y_dest)>=err_pos_imp2):
+                        self.cmd_linear.x = 0.4
+                    else: 
+                        self.cmd_linear.x = 0.
+                    if np.sign(theta) == np.sign(angle_robot):
+                        if theta > angle_robot:
+                            self.cmd_angular.z = vit_rot*np.abs(theta - angle_robot)/2 + kp*(err - self.err_prec)
                         else:
-                            self.cmd_angular.z = -vit_rot*(np.abs(theta - angle_robot)-np.pi)/2 + kp*(err - err_prec)
+                            self.cmd_angular.z = -vit_rot*np.abs(theta - angle_robot)/2 + kp*(err - self.err_prec)
                     else:
-                        if theta < angle_robot:
-                            self.cmd_angular.z = -vit_rot*np.abs(theta - angle_robot)/2 + kp*(err - err_prec)
+                        if np.abs(theta - angle_robot) > np.pi:
+                            if theta < angle_robot:
+                                self.cmd_angular.z = vit_rot*(np.abs(theta - angle_robot)-np.pi)/2 + kp*(err - self.err_prec)
+                            else:
+                                self.cmd_angular.z = -vit_rot*(np.abs(theta - angle_robot)-np.pi)/2 + kp*(err - self.err_prec)
                         else:
-                            self.cmd_angular.z = vit_rot*np.abs(theta - angle_robot)/2 + kp*(err - err_prec)
-        else:
-            self.cmd_angular.z = 0.
-            if (abs(x - x_dest)>=err_pos or abs(y - y_dest)>=err_pos):
-                self.cmd_linear.x = 0.7
+                            if theta < angle_robot:
+                                self.cmd_angular.z = -vit_rot*np.abs(theta - angle_robot)/2 + kp*(err - self.err_prec)
+                            else:
+                                self.cmd_angular.z = vit_rot*np.abs(theta - angle_robot)/2 + kp*(err - self.err_prec)
             else:
-                self.waypoints.remove(self.waypoints[0])
+                self.cmd_angular.z = 0.
+                if (abs(x - x_dest)>=err_pos*2 or abs(y - y_dest)>=err_pos*2):
+                   self.cmd_linear.x = 0.7
+                if ( err_pos<abs(x - x_dest)<err_pos*2 or err_pos<abs(y - y_dest)<err_pos*2):
+                    self.cmd_linear.x = 0.4
                 
-                self.cmd_linear.x = 0.
+        else:
+            self.waypoints.remove(self.waypoints[0])
+            self.get_logger().info(str("waypoint atteint"))
+            self.cmd_linear.x = 0.
+
+        self.err_prec = err
 
 
     def ajout_waypoint(self):
         """Cette fonction permet d'ajouter ou de modifier les waypoints que doit suivre le robot, elle va modifier self.waypoints mais ne rien renvoyer."""
         # A REVOIR, NE MARCHE PAS BIEN
-        if self.lis_balls != []:
+        if self.ball_is_catch:
+            x, y = self.position_robot
+            if y < 640:
+                self.waypoints = [(self.coords_zone[0][0], self.coords_zone[0][1])]
+            else:
+                self.waypoints = [(self.coords_zone[1][0], self.coords_zone[1][1])]
+
+        if self.lis_balls != [] and self.ball_is_catch == False:
             lis_balls = copy.deepcopy(self.lis_balls)
             if self.in_square(self.position_robot) == self.in_square(lis_balls[0]):
                 ramassage_balle = self.path_balls(lis_balls, lis_balls[0], self.position_robot[0], self.position_robot[1], 30)
@@ -194,12 +207,7 @@ class MinimalSubscriber(Node):
             #self.get_logger().info("Ramasse"+str(ramassage_balle))
             #self.get_logger().info("waypoint"+str(self.waypoints))
             self.waypoints = ramassage_balle
-        if self.ball_is_catch:
-            x, y = self.position_robot
-            if y < 640:
-                self.waypoint = [(self.coords_zone[0][0], self.coords_zone[0][1])]
-            else:
-                self.waypoint = [(self.coords_zone[1][0], self.coords_zone[1][1])]
+
 
 
 
