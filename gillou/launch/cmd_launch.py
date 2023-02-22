@@ -25,9 +25,9 @@ def generate_launch_description():
         executable='detec_robot.py',
     )
 
-    #ld.add_action(orientation_robot_node)
+    ld.add_action(orientation_robot_node)
     ld.add_action(detec_ball_node)
-    #ld.add_action(detec_robot_node)
-    #ld.add_action(ball_order_node)
+    ld.add_action(detec_robot_node)
+    ld.add_action(ball_order_node)
 
     return ld
