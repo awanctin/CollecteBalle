@@ -49,6 +49,7 @@ class MinimalSubscriber(Node):
         self.lis_balls = []
         self.waypoints = []
         self.err_prec = 0.
+        self.ball_is_catch = False
 
 
     def detect_zone(self, msg):
@@ -193,7 +194,13 @@ class MinimalSubscriber(Node):
             #self.get_logger().info("Ramasse"+str(ramassage_balle))
             #self.get_logger().info("waypoint"+str(self.waypoints))
             self.waypoints = ramassage_balle
-        if 
+        if self.ball_is_catch:
+            x, y = self.position_robot
+            if y < 640:
+                self.waypoint = [(self.coords_zone[0][0], self.coords_zone[0][1])]
+            else:
+                self.waypoint = [(self.coords_zone[1][0], self.coords_zone[1][1])]
+
 
 
     def passage_filet(self):
