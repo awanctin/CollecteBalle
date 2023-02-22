@@ -5,6 +5,7 @@ import rclpy
 from geometry_msgs.msg import Twist
 from rclpy.node import Node
 from pyjoystick.sdl2 import Key, run_event_loop
+from std_msgs.msg import Bool
 
 
 class MinimalPublisher(Node):
@@ -12,7 +13,7 @@ class MinimalPublisher(Node):
     def __init__(self):
         super().__init__('publisher')
         self.publisher_ = self.create_publisher(Twist, 'demo/cmd_vel', 10)
-
+        self.publisher1_ = self.create_publisher(Bool, '/bool_pelle', 10)
 
 def print_add(joy):
     print('Added', joy)
