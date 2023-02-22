@@ -7,8 +7,8 @@ import numpy as np
 from rclpy.node import Node
 from std_msgs.msg import Int16MultiArray, Float32
 from geometry_msgs.msg import Vector3, Twist
-
-
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge
 class MinimalSubscriber(Node):
 
     def __init__(self):
@@ -33,6 +33,11 @@ class MinimalSubscriber(Node):
             self.listener_orientation_callback,
             10)
         self.subscription3  # prevent unused variable warning
+        self.subscription4 = self.create_subscription(
+            Image,
+            '/zenith_camera/image_raw',
+            self.detect_zone,
+            10)
         self.publisher_ = self.create_publisher(Twist, '/demo/cmd_vel', 10)
         timer_period = 0.1  # seconds
         self.timer = self.create_timer(timer_period, self.timer_cmd_callback)
@@ -52,7 +57,7 @@ class MinimalSubscriber(Node):
 
 
     def detect_zone(self, msg):
-        current_frame = self.br.imgmsg_to_cv2(msg)
+        current_frame = CvBridge().imgmsg_to_cv2(msg)
         current_frame = cv2.cvtColor(current_frame, cv2.COLOR_BGR2RGB)
         hsv = cv2.cvtColor(current_frame, cv2.COLOR_RGB2HSV)
         # on effectue un masque avec les valeurs ci-dessous recuperee sur internet
@@ -83,7 +88,7 @@ class MinimalSubscriber(Node):
         coord_r_entry = [np.min(safe_r_x), np.min(safe_r_y)]
         self.coords_zone = [coord_l_center, coord_r_center]
         self.coords_entry = [coord_l_entry, coord_r_entry]
-
+        
     def timer_cmd_callback(self):
         msg = Twist()
         msg.linear = self.cmd_linear

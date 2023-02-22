@@ -209,10 +209,10 @@
     <visual>
       <geometry>
 
-       <!--<cylinder radius="${hook_radius}" length="${hook_width}"/>-->
-       <!-- <mesh filename="package://gillou/description_inventor/pelle.dae"/> -->
+       <cylinder radius="${hook_radius}" length="${hook_width}"/>
+       <mesh filename="package://gillou/description_inventor/pelle.dae"/> 
       </geometry>
-    <!--  <material name="Cyan">
+      <material name="Cyan">
         <color rgba="0 1.0 1.0 1.0"/>
       </material> -->
 
