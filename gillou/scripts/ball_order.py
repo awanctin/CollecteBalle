@@ -49,6 +49,7 @@ class MinimalSubscriber(Node):
         self.net_sides = [[[0, 0], [0, 0]], [[0, 0], [0, 0]]]
         self.lis_balls = []
         self.waypoints = []
+        self.ball_is_catch = False
 
 
     def detect_zone(self, msg):
@@ -97,6 +98,11 @@ class MinimalSubscriber(Node):
         ###
         self.publisher_.publish(msg)
 
+    def ball_is_catch(self):
+        """Cette fonction permet de savoir si le waypoint atteint correspond à une balle attrapée"""
+        points_filets = [(70,590), (70,690), (630,690), (630,590)]
+        if self.waypoints[0,0] not in points_filets:
+            self.ball_is_catch = True
 
     def listener_callback(self, msg):
         lis_interm = []
@@ -140,8 +146,6 @@ class MinimalSubscriber(Node):
         err_pos_imp2 = 40
         err_pos = 20 #pixel
         vit_rot = 0.5
-        #self.get_logger().info('angle cherché: "%f"' % theta) 
-        #self.get_logger().info('angle actu: "%f"' % angle_robot) 
         self.get_logger().info(str(self.position_robot)+ "pos_rob")
         self.get_logger().info(str(x_dest)+ " " + str(y_dest))
 
@@ -174,6 +178,7 @@ class MinimalSubscriber(Node):
             if (abs(x - x_dest)>=err_pos or abs(y - y_dest)>=err_pos):
                 self.cmd_linear.x = 0.7
             else:
+
                 self.waypoints.remove(self.waypoints[0])
                 
                 self.cmd_linear.x = 0.
