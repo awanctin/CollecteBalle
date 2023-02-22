@@ -166,12 +166,10 @@ class MinimalSubscriber(Node):
         err_pos_imp2 = 40
         err_pos = 20 #pixel
         vit_rot = 0.5
-<<<<<<< HEAD
         kp = 0.2
         #self.get_logger().info('angle cherché: "%f"' % theta) 
         #self.get_logger().info('angle actu: "%f"' % angle_robot) 
-=======
->>>>>>> e1869deef9aa0e93451ed6cf6f771945814db169
+
         self.get_logger().info(str(self.position_robot)+ "pos_rob")
         self.get_logger().info(str(x_dest)+ " " + str(y_dest))
         err = theta - angle_robot
@@ -202,16 +200,13 @@ class MinimalSubscriber(Node):
                             else:
                                 self.cmd_angular.z = vit_rot*np.abs(theta - angle_robot)/2 + kp*(err - self.err_prec)
             else:
-<<<<<<< HEAD
+
                 self.cmd_angular.z = 0.
                 if (abs(x - x_dest)>=err_pos*2 or abs(y - y_dest)>=err_pos*2):
                    self.cmd_linear.x = 0.7
                 if ( err_pos<abs(x - x_dest)<err_pos*2 or err_pos<abs(y - y_dest)<err_pos*2):
                     self.cmd_linear.x = 0.4
-=======
 
-                self.waypoints.remove(self.waypoints[0])
->>>>>>> e1869deef9aa0e93451ed6cf6f771945814db169
                 
         else:
             self.waypoints.remove(self.waypoints[0])
