@@ -25,8 +25,8 @@ def det_lis_balls(img):
         coord = [coord_x[i], coord_y[i]]
         already_in_lis = False
         for pix in lis_pixels:
-            if np.abs(coord[0] - pix[0]) <= 10 or\
-              np.abs(coord[1] - pix[1]) <= 10:
+            if np.abs(coord[0] - pix[0]) <= 18 and\
+              np.abs(coord[1] - pix[1]) <= 18:
                 already_in_lis = True
         if not (already_in_lis):
             lis_pixels.append(coord)
@@ -94,9 +94,9 @@ class MinimalSubscriber(Node):
             data.append(ball[0])
             data.append(ball[1])
             data.append(i)
-        # print(data)
+   
         msg.data = [int(data[i]) for i in range(len(data))]
-        # print(msg.data)
+        self.get_logger().info(str(msg))
         self.publisher_.publish(msg)
 
     def listener_callback(self, msg):
@@ -107,27 +107,28 @@ class MinimalSubscriber(Node):
         # det_safe_zone(current_frame)
         detect_zone(current_frame)
         self.update_lis_balls(det_lis_balls(current_frame))
-        self.get_logger().info(str(det_lis_balls(current_frame)))
         # print(self.lis_balls)
 
     def update_lis_balls(self, new_lis):
+        """Cette fonction met à jour la position de l'ensemble des balles détectées
+
+        Args:
+            new_lis (list[[2]]): _description_
+        """
         if len(self.lis_balls) <= len(new_lis):
             for i in range(len(self.lis_balls)):
-                print("coucou")
                 old_ball = self.lis_balls[i]
                 dist = np.inf
                 new_coords = [0, 0]
                 for new_ball in new_lis:
                     new_dist = np.sqrt((old_ball[0] - new_ball[0])**2 + (old_ball[1] - new_ball[1])**2)
                     if new_dist < dist:
-                        print("nouvelle dist : ", new_dist)
                         if (not (new_ball in self.lis_balls)) or new_dist == 0:
                             dist = new_dist
                             new_coords = new_ball
-                # assert dist < 100
                 self.lis_balls[i] = new_coords
-            while [0, 0] in self.lis_balls:
-                self.lis_balls.remove([0, 0])
+            #while [0, 0] in self.lis_balls:
+            #    self.lis_balls.remove([0, 0])
             for new_ball in new_lis:
                 if not (new_ball in self.lis_balls):
                     self.lis_balls.append(new_ball)
