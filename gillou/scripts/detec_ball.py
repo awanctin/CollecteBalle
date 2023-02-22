@@ -107,6 +107,7 @@ class MinimalSubscriber(Node):
         # det_safe_zone(current_frame)
         detect_zone(current_frame)
         self.update_lis_balls(det_lis_balls(current_frame))
+        self.get_logger().info(str(det_lis_balls(current_frame)))
         # print(self.lis_balls)
 
     def update_lis_balls(self, new_lis):
