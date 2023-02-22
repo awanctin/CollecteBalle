@@ -19,7 +19,7 @@ class BallManager(Node):
 
     DELETE_BALL_DURATION = Duration(seconds=5.0)
     SPAWN_BALL_DURATION = 10.0
-    TOTAL_BALL_COUNT = 10
+    TOTAL_BALL_COUNT = 1
 
     def __init__(self):
         super().__init__("ball_manager")

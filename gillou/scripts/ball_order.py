@@ -142,8 +142,8 @@ class MinimalSubscriber(Node):
         vit_rot = 0.5
         #self.get_logger().info('angle cherché: "%f"' % theta) 
         #self.get_logger().info('angle actu: "%f"' % angle_robot) 
-        self.get_logger().info(str(self.position_robot)+ "pos_rob")
-        self.get_logger().info(str(x_dest)+ " " + str(y_dest))
+        # self.get_logger().info(str(self.position_robot)+ "pos_rob")
+        # self.get_logger().info(str(x_dest)+ " " + str(y_dest))
 
         if (np.abs(theta - angle_robot) > err_angle):
             if (abs(x - x_dest)>=err_pos or abs(y - y_dest)>=err_pos):
@@ -184,16 +184,22 @@ class MinimalSubscriber(Node):
         # A REVOIR, NE MARCHE PAS BIEN
         if self.lis_balls != []:
             lis_balls = copy.deepcopy(self.lis_balls)
-            if self.in_square(self.position_robot) == self.in_square(lis_balls[0]):
-                ramassage_balle = self.path_balls(lis_balls, lis_balls[0], self.position_robot[0], self.position_robot[1], 30)
-            else:
-                ramassage_balle = self.path_balls(lis_balls, self.passage_filet(), self.position_robot[0], self.position_robot[1], 30) + self.path_balls(lis_balls, lis_balls[0], self.passage_filet()[0], self.passage_filet()[1], 30)
+            ramassage_balle = self.path_balls(lis_balls, lis_balls[0], self.position_robot[0], self.position_robot[1], 5)
+            # if self.in_square(self.position_robot) == self.in_square(lis_balls[0]):
+            #     ramassage_balle = self.path_balls(lis_balls, lis_balls[0], self.position_robot[0], self.position_robot[1], 30)
+            #     self.get_logger().info("ON est dans le même carré")
+            # else:
+            #     ramassage_balle = self.path_balls(lis_balls, self.passage_filet("near"), self.position_robot[0], self.position_robot[1], 30) + self.path_balls(lis_balls, self.passage_filet("far"), self.passage_filet("near")[0], self.passage_filet("near")[0], 30) + self.path_balls(lis_balls, lis_balls[0], self.passage_filet("far")[0], self.passage_filet("far")[1], 30)
+            #     self.get_logger().info("On doit passer le filet")
             #self.get_logger().info("Ramasse"+str(ramassage_balle))
             #self.get_logger().info("waypoint"+str(self.waypoints))
+            # self.get_logger().info("liste_balles = "+str(self.lis_balls))
+            # self.get_logger().info("waypoint"+str(self.waypoints))
+            self.get_logger().info("len(waypoints = ) "+str(len(self.waypoints)))
             self.waypoints = ramassage_balle  
 
 
-    def passage_filet(self):
+    def passage_filet(self, dist):
         """
         Cette fonction renvoie la position du point au niveau du filet par lequel le robot doit passer pour changer de côté.
 
@@ -206,20 +212,30 @@ class MinimalSubscriber(Node):
         y = self.position_robot[1]
         vert = "haut"
         hor = "droite"
-        if x <= 360:
+
+        if x >= 360:
             vert = "bas"
         if y <= 640:
             hor = "gauche"
+
         if vert == "haut":
-            if hor == "gauche":
-                return (620, 630)
-            else:
-                return (620, 650)
+            if hor == "gauche" and dist=="near":
+                return (70, 590)
+            elif hor == "gauche" and dist=="far":
+                return (70, 690)
+            elif hor == "droite" and dist=="near":
+                return (70, 690)
+            elif hor == "droite" and dist=="far":
+                return (70, 590)
         else:
-            if hor == "gauche":
-                return (100,630)
-            else:
-                return (100, 650)
+            if hor == "gauche" and dist=="near":
+                return (630, 590)
+            elif hor == "gauche" and dist=="far":
+                return (630, 690)
+            elif hor == "droite" and dist=="near":
+                return (630, 690)
+            elif hor == "droite" and dist=="far":
+                return (630, 590)
 
 
     def min_distance(self, x, y, list_coords):
@@ -249,7 +265,7 @@ class MinimalSubscriber(Node):
         return ball[2]
 
 
-    def path_balls(self, lis_balls, ball_obj, x_robot, y_robot, radius=30):
+    def path_balls(self, lis_balls, ball_obj, x_robot, y_robot, radius=5):
         # Careful ! lis_balls will be modified, therefore must not be the original one, 
         # rather a copy
         """
@@ -294,7 +310,7 @@ class MinimalSubscriber(Node):
 
         Returns
         -------
-            bool: whether the ball is in the ractangle or not
+            bool: whether the ball is in the rectangle or not
 
         """
         complex_vect = complex(x_dest - x_robot, y_dest - x_dest)
@@ -338,14 +354,13 @@ class MinimalSubscriber(Node):
         output: Side of the net, "Left" or "Right"
         """
         #left = [self.net_sides[0][0][0], self.net_sides[0][1][0]]
-        ## TODO verify if it is the x or y coordinates that change between sides
         #right = [self.net_sides[1][0][0], self.net_sides[1][1][0]]
 
         #if min(left) <= coords[0] <= max(left):
         #    return 'Left'
         #elif min(right) <= coords[0] <= max(right):
         #    return 'Right'
-        if coords[1] <= 640:
+        if coords[1] <= 640:    
             return 'Left'
         else:
             return 'Right'
