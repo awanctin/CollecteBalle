@@ -9,6 +9,7 @@ from std_msgs.msg import Int16MultiArray, Float32
 from geometry_msgs.msg import Vector3, Twist
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
+from std_msgs.msg import Bool
 class MinimalSubscriber(Node):
 
     def __init__(self):
@@ -39,6 +40,7 @@ class MinimalSubscriber(Node):
             self.detect_zone,
             10)
         self.publisher_ = self.create_publisher(Twist, '/demo/cmd_vel', 10)
+        self.publisher1_ = self.create_publisher(Bool, '/bool_pelle', 10)
         timer_period = 0.1  # seconds
         self.timer = self.create_timer(timer_period, self.timer_cmd_callback)
 
@@ -57,6 +59,7 @@ class MinimalSubscriber(Node):
 
 
     def detect_zone(self, msg):
+        
         current_frame = CvBridge().imgmsg_to_cv2(msg)
         current_frame = cv2.cvtColor(current_frame, cv2.COLOR_BGR2RGB)
         hsv = cv2.cvtColor(current_frame, cv2.COLOR_RGB2HSV)
@@ -88,7 +91,7 @@ class MinimalSubscriber(Node):
         coord_r_entry = [np.min(safe_r_x), np.min(safe_r_y)]
         self.coords_zone = [coord_l_center, coord_r_center]
         self.coords_entry = [coord_l_entry, coord_r_entry]
-        
+
     def timer_cmd_callback(self):
         msg = Twist()
         msg.linear = self.cmd_linear
@@ -101,7 +104,16 @@ class MinimalSubscriber(Node):
             self.straight_line(dest_x, dest_y)
         ###
         self.publisher_.publish(msg)
-
+        b = Bool()
+        (x,y) = self.position_robot
+        (c1,c2)= self.waypoints[0]
+        d = np.sqrt((x-c1)**2+(y-c2)**2)
+        if d<100:
+            b.data = False
+            self.publisher1_.publish(b)
+        else : 
+            b.data = True
+            self.publisher1_.publish(b)
 
     def listener_callback(self, msg):
         lis_interm = []
